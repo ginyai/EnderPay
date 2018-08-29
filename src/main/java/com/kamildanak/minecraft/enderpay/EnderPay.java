@@ -7,6 +7,7 @@ import com.kamildanak.minecraft.enderpay.economy.Account;
 import com.kamildanak.minecraft.enderpay.economy.DayHelper;
 import com.kamildanak.minecraft.enderpay.economy.PlayerHelper;
 import com.kamildanak.minecraft.enderpay.events.EventHandler;
+import com.kamildanak.minecraft.enderpay.events.SpongeHandler;
 import com.kamildanak.minecraft.enderpay.gui.GuiBanknote;
 import com.kamildanak.minecraft.enderpay.item.ItemBlankBanknote;
 import com.kamildanak.minecraft.enderpay.item.ItemFilledBanknote;
@@ -25,12 +26,14 @@ import net.minecraft.world.storage.ISaveHandler;
 import net.minecraft.world.storage.SaveHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import org.spongepowered.api.Sponge;
 
 import java.io.File;
 
@@ -79,6 +82,10 @@ public class EnderPay {
         proxy.init();
         proxy.registerPackets();
         MinecraftForge.EVENT_BUS.register(new EventHandler());
+
+        if(Loader.isModLoaded("sponge")){
+            Sponge.getEventManager().registerListeners(this,new SpongeHandler());
+        }
 
         guiBanknote = new GuiHandler("wrench") {
             @Override

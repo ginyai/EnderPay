@@ -1,3 +1,29 @@
+
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+        maven {
+            name = 'forge'
+            url = 'http://files.minecraftforge.net/maven'
+        }
+        maven {
+            name = 'sponge'
+            url = 'https://repo.spongepowered.org/maven'
+        }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+    }
+}
+
+plugins {
+    id 'org.spongepowered.plugin' version '0.8.1'
+}
+
+apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'maven'
+
 def mcVersion         = "1.12.2" // Always matches the Minecraft version the mod is for.
 def majorModVersion   = "1" // Removing items/blocks, changing mechanics, updating to a new Minecraft version.
 def majorApiModVersion     = "0" // Changing the order of enums, return types of methods, removing methods
@@ -9,18 +35,6 @@ version = mcVersion+"-"+majorModVersion+"."+majorApiModVersion+"."+minorModVersi
 def env = System.getenv()
 def minecraftModdingEnv = env['MinecraftModdingEnv'] != null ? env['MinecraftModdingEnv'].trim() : "dev"
 
-buildscript {
-    repositories {
-        jcenter()
-        maven { url = "http://files.minecraftforge.net/maven" }
-    }
-    dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
-    }
-}
-apply plugin: 'net.minecraftforge.gradle.forge'
-apply plugin: 'maven'
-
 group = "com.kamildanak.minecraft.enderpay" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "enderpay"
 
@@ -29,7 +43,7 @@ sourceCompatibility = "1.8"
 
 minecraft {
     version = "1.12.2-14.23.4.2705"
-    mappings = "snapshot_20171003"
+    mappings = "snapshot_20180609"
 
     if (file("../run").exists()) {
         runDir = "../run"
@@ -42,18 +56,26 @@ minecraft {
 
 repositories {
     maven {
+        name = 'sponge'
+        url = 'https://repo.spongepowered.org/maven'
+    }
+    maven {
         url "http://kamildanak.com/maven/"
     }
 }
 
-if ( minecraftModdingEnv == "production" ) {
-    dependencies {
-        compile name: "foamflower", group: "com.kamildanak.minecraft.foamflower", version: "1.12.2-1.0.0.0-beta1", classifier: "deobf"
-    }
-} else {
-    dependencies {
-        compile project(':Foamflower')
-    }
+//if ( minecraftModdingEnv == "production" ) {
+//    dependencies {
+//        compile name: "foamflower", group: "com.kamildanak.minecraft.foamflower", version: "1.12.2-1.0.0.0-beta1", classifier: "deobf"
+//    }
+//} else {
+//    dependencies {
+//        compile project(':Foamflower')
+//    }
+//}
+
+dependencies{
+    compile 'org.spongepowered:spongeforge:1.12.2-2705-7.1.0-BETA-3361:dev'
 }
 
 processResources
@@ -82,11 +104,11 @@ artifacts {
     archives sourceJar
     archives jar
 }
-
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            repository(url: "file://localhost/"+projectDir+"/../local-repo/")
-        }
-    }
-}
+//
+//uploadArchives {
+//    repositories {
+//        mavenDeployer {
+//            repository(url: "file://localhost/"+projectDir+"/../local-repo/")
+//        }
+//    }
+//}

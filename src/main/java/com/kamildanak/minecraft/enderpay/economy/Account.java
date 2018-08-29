@@ -2,14 +2,23 @@ package com.kamildanak.minecraft.enderpay.economy;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.kamildanak.minecraft.enderpay.EnderPay;
 import com.kamildanak.minecraft.enderpay.proxy.ISettings;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraftforge.fml.common.Loader;
+import org.spongepowered.api.Sponge;
+import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.api.event.cause.EventContext;
+import org.spongepowered.api.service.economy.Currency;
+import org.spongepowered.api.service.economy.EconomyService;
+import org.spongepowered.api.service.economy.account.UniqueAccount;
 
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -43,6 +52,19 @@ public class Account {
     public static Account get(UUID uuid) {
         Account account = objects.get(uuid.toString());
         if (account != null) return account;
+
+        //sponge
+        if(Loader.isModLoaded("sponge")){
+            EconomyService service = Sponge.getServiceManager().provideUnchecked(EconomyService.class);
+            Currency currency = service.getDefaultCurrency();
+            UniqueAccount spongeAccount = service.getOrCreateAccount(uuid).orElse(null);
+            if(spongeAccount == null){
+                return null;
+            }
+            account = new SpongeAccount(uuid, currency, spongeAccount);
+            objects.put(uuid.toString(), account);
+            return account;
+        }
 
         if (location == null) return null;
         //noinspection ResultOfMethodCallIgnored
@@ -164,5 +186,46 @@ public class Account {
         Account.settings = settings;
         Account.dayHelper = dayHelper;
         Account.playerHelper = playerHelper;
+    }
+
+    private static class SpongeAccount extends Account{
+
+        private Currency currency;
+        private UniqueAccount spongeAccount;
+
+        private SpongeAccount(UUID uuid, Currency currency, @Nullable UniqueAccount spongeAccount) {
+            super(uuid);
+            this.currency = currency;
+            this.spongeAccount = spongeAccount;
+        }
+
+        @Override
+        public boolean update() {
+            return false;
+        }
+
+        @Override
+        public void writeIfChanged() throws IOException {
+            //Nothing
+        }
+
+        @Override
+        public long getBalance() {
+            return spongeAccount.getBalance(currency).longValue();
+        }
+
+        @Override
+        public void setBalance(long v) {
+            spongeAccount.setBalance(currency,BigDecimal.valueOf(v),Cause.of(EventContext.empty(),EnderPay.instance));
+        }
+
+        @Override
+        public void addBalance(long v) {
+            if(v>=0){
+                spongeAccount.deposit(currency,BigDecimal.valueOf(v),Cause.of(EventContext.empty(),EnderPay.instance));
+            }else {
+                spongeAccount.withdraw(currency,BigDecimal.valueOf(-v),Cause.of(EventContext.empty(),EnderPay.instance));
+            }
+        }
     }
 }
